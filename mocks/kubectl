@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "[DEBUG] mocking kubectl command"
+echo "[DEBUG] this will run kubectl $1 $2 $3 $4 $5"
+echo "[DEBUG] printing file $5 with cat $5"
+cat $5
