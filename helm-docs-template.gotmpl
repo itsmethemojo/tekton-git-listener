@@ -1,0 +1,49 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+# Installation with helm
+
+see [chart on artifact hub](https://artifacthub.io/packages/helm/itsmethemojo/tekton-git-listener)
+
+# Local execution
+
+For local usage you need at least `yq` ([see](https://github.com/mikefarah/yq)) and `git` installed. You can then test the functionality of the `examples/without_authentification` config
+```
+KUBECTL_BINARY=./mocks/kubectl ./run.sh
+```
+
+If you have kubectl access to your kubernetes cluster with tekton setup you can also test the pipeline creation locally by not using the mock command
+```
+./run.sh
+```
+
+**NOTE** that the script will create local state data in the tmp folder holding information about already fetched commits/tags. 
+If you want to start from scratch you have to clean up this by.
+
+```
+rm -rf tmp/
+```
+
+
+generic git repository listener to run tekton pipelines on new commits and/or tags
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Update docs
+
+```
+docker run --rm -v $(pwd):/app -w/app jnorwood/helm-docs -t helm-docs-template.gotmpl
+```

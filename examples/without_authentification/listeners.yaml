@@ -1,0 +1,18 @@
+- url: https://github.com/itsmethemojo/tekton-git-listener.git
+  ref_filter: "refs/heads/main"
+  pipeline_name: your-pipeline-run-name
+  pipeline_run_template: |
+    apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      name: __NAME__
+    spec:
+      pipelineRef:
+        name: your-awesome-tekton-pipeline-template
+      params:
+      - name: repo-url
+        value: __URL__
+      - name: git-revision
+        value: __REVISION__
+      - name: branch
+        value: __BRANCH__

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: tekton-git-listener
+description: generic git repository listener to run tekton pipelines on new commits and/or tags
+type: application
+version: 0.1.0
+sources:
+  - https://github.com/itsmethemojo/tekton-git-listener
+dependencies:
+- name: basic-web-app
+  version: "1.2.1"
+  alias: app
+  repository: "https://itsmethemojo.github.io/helm-charts/"

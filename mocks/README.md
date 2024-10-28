@@ -1,0 +1,1 @@
+this folder contains simple mock scripts used for testing purposes

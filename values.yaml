@@ -1,0 +1,86 @@
+config:
+  # -- List of repositories to be watched for new commits/tags. for each you can add the `token` attribute to use access tokens. TODO the listener pod does not automatically reload on config file changes yet
+  repositories:
+
+    - # -- HTTPS clone url of the git repository
+      url: https://github.com/itsmethemojo/tekton-git-listener.git
+  # -- List of watch definitions
+  listeners:
+    -
+      # -- Url has to match the url in the `repositories` list
+      url: https://github.com/itsmethemojo/tekton-git-listener.git
+      # -- This filters the refs as displayed in git ls-remote. choose "refs/heads/" to watch only branches, or "refs/tags/" to watch only tags. You can also leave it out completely to watch everything of both.
+      ref_filter: "refs/heads/main"
+      # -- Name prefix of the tekton pipeline run that will be created
+      pipeline_name: your-pipeline-run-name
+      # -- The yaml definition template for the tekton pipeline run that will be created. Make sure you use the `__NAME__` placeholder to get a generic name for this pipeline run. Also make use of the `__URL__`, `__REVISION__`, `__SHORT_REVISION__` and `__BRANCH__` placeholders to get run specific inputs.
+      pipeline_run_template: |
+        apiVersion: tekton.dev/v1beta1
+        kind: PipelineRun
+        metadata:
+          name: __NAME__
+        spec:
+          pipelineRef:
+            name: your-awesome-tekton-pipeline-template
+          params:
+          - name: repo-url
+            value: __URL__
+          - name: git-revision
+            value: __REVISION__
+          - name: branch
+            value: __BRANCH__
+
+app:
+  fullnameOverride: "tekton-git-listener"
+
+  livenessProbe: ""
+  readinessProbe: ""
+  startupProbe: ""
+
+  command:
+    - bash
+    - /scripts/run.sh
+
+  env:
+    # -- To be able to use generic containers, this defines a download URI for the kubectl binary. if left empty the script will use the kubectl binary found in PATH
+    KUBECTL_DOWNLOAD_URI: "https://dl.k8s.io/release/v1.31.2/bin/linux/amd64/kubectl"
+    # -- To be able to use generic containers, this defines a download URI for the yq binary. if left empty the script will use the yqa binary found in PATH
+    YQ_DOWNLOAD_URI: "https://github.com/mikefarah/yq/releases/download/v4.27.5/yq_linux_amd64"
+    # -- Directory to find the `listeners.yaml` and `repositories.yaml` in
+    CONFIG_DIR: /config
+    # -- Directory where git repositories will be cloned for watching
+    GIT_CLONE_DIR: /tmp/clone
+    # -- Directory where current branch/tag ref data is stored to be compared. TODO this should be a PVC
+    DATA_DIR: /tmp/data
+    # -- If set to true this script will periodically run every `$PULL_INTERVALL` seconds
+    DAEMON_MODE: "true"
+    # -- Intervall in seconds where all defined repositories will be watched for new commit/tag refs.
+    PULL_INTERVALL: "300"
+    # -- Directory to store temporary created tekton pipeline run definitions
+    tmp_dir: /tmp/definitions
+    # -- If set to true on the first run pipelines for all matched branch/tags that already exists will be created. If set to false only new commits/tags added after starting this script will be considered.
+    CREATE_INITIAL_PIPELINES: "false"
+
+  image:
+    # -- This image will miss the yq and kubectl binary. You might choose an image with both available and disbale `$KUBECTL_DOWNLOAD_URI` and `$YQ_DOWNLOAD_URI`
+    repository: buildpack-deps
+    tag: scm
+
+  serviceAccount:
+    create: false
+    # -- make sure this name aligns with `base.fullnameOverride`
+    name: "tekton-git-listener"
+
+  extraVolumeMounts:
+    - name: scripts
+      mountPath: /scripts
+    - name: config
+      mountPath: /config
+
+  extraVolumes:
+    - name: scripts
+      configMap:
+        name: tekton-git-listener-scripts
+    - name: config
+      secret:
+        secretName: tekton-git-listener-config
