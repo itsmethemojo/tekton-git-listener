@@ -2,7 +2,8 @@ apiVersion: v2
 name: tekton-git-listener
 description: generic git repository listener to run tekton pipelines on new commits and/or tags
 type: application
-version: 0.1.0
+version: 0.1.1
+icon: https://itsmethemojo.github.io/helm-charts/icon.png
 sources:
   - https://github.com/itsmethemojo/tekton-git-listener
 dependencies:
